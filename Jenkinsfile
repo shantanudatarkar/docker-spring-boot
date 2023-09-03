@@ -56,7 +56,7 @@ pipeline {
                         git config user.email "shan6101995@gmail.com"
                         git config user.name "shantanudatarkar"
                         BUILD_NUMBER=${BUILD_NUMBER}
-                        sed -i "s|image: shantanu/shantanu:.*|image: shantanu/shantanu:${BUILD_NUMBER}|g" values.yaml
+                        sed -i "s|image: .*|image: shantanu/shantanu:${BUILD_NUMBER}|g" /home/shantanu/docker-spring-boot/my-helm-chart/values.yaml
                         git add --all
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
