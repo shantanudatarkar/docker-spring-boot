@@ -69,25 +69,25 @@ pipeline {
                             git config user.email "shan6101995@gmail.com"
                             git config user.name "shantanudatarkar"
                         """
+                        
+                        // Change to the Helm chart directory using dir
+                        dir(helmChartPath) {
+                            // Update the image tag in values.yaml
+                            sh """
+                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
+                            """
 
-                        // Change to the Helm chart directory
-                        sh "cd ${helmChartPath}"
+                            // Add and commit changes
+                            sh """
+                                git add --all
+                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            """
 
-                        // Update the image tag in values.yaml
-                        sh """
-                            sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
-                        """
-
-                        // Add and commit changes
-                        sh """
-                            git add --all
-                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        """
-
-                        // Push the changes to GitHub
-                        sh """
-                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                        """
+                            // Push the changes to GitHub
+                            sh """
+                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                            """
+                        }
                     }
                 }
             }
