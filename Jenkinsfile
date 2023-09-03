@@ -50,43 +50,44 @@ pipeline {
                 GIT_USER_NAME = "shantanudatarkar"
             }
             steps {
-                withCredentials([gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default')]) {
-                    withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'GITHUB_TOKEN')]) {
-                        script {
-                            // Get the current build number
-                            def BUILD_NUMBER = env.BUILD_NUMBER
+                withCredentials([
+                    gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default'),
+                    usernameColonPassword(credentialsId: 'Github_id', variable: 'GITHUB_TOKEN')
+                ]) {
+                    script {
+                        // Get the current build number
+                        def BUILD_NUMBER = env.BUILD_NUMBER
 
-                            // Define the path to your Helm chart
-                            def helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
+                        // Define the path to your Helm chart
+                        def helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
 
-                            // Define the image name
-                            def imageName = "shantanu/shantanu"
+                        // Define the image name
+                        def imageName = "shantanu/shantanu"
 
-                            // Configure Git user and email
-                            sh """
-                                git config user.email "shan6101995@gmail.com"
-                                git config user.name "shantanudatarkar"
-                            """
+                        // Configure Git user and email
+                        sh """
+                            git config user.email "shan6101995@gmail.com"
+                            git config user.name "shantanudatarkar"
+                        """
 
-                            // Change to the Helm chart directory
-                            sh "cd ${helmChartPath}"
+                        // Change to the Helm chart directory
+                        sh "cd ${helmChartPath}"
 
-                            // Update the image tag in values.yaml
-                            sh """
-                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
-                            """
+                        // Update the image tag in values.yaml
+                        sh """
+                            sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
+                        """
 
-                            // Add and commit changes
-                            sh """
-                                git add --all
-                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                            """
+                        // Add and commit changes
+                        sh """
+                            git add --all
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                        """
 
-                            // Push the changes to GitHub
-                            sh """
-                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                            """
-                        }
+                        // Push the changes to GitHub
+                        sh """
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        """
                     }
                 }
             }
