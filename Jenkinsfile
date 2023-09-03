@@ -42,18 +42,29 @@ pipeline {
                     """
                 }
             }
-        }
-        
-        stage("Helm package") {
+        }    
+       stage('Update Deployment File') {
+            environment {
+                GIT_REPO_NAME = "docker-spring-boot"
+                GIT_USER_NAME = "shantanudatarkar"
+            }
             steps {
-                sh "helm package springboot"
+                withCredentials([gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default')]) {
+                    withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'Github')]) {
+
+                    sh '''
+                        git config user.email "shan6101995@gmail.com"
+                        git config user.name "shantanudatarkar"
+                        BUILD_NUMBER=${BUILD_NUMBER}
+                        sed -i "s|image: shantanu/shantanu:.*|image: shantanu/shantanu:${BUILD_NUMBER}|g" values.yaml
+                        git add --all
+                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    '''
+                }
             }
         }
-                
-        stage("Helm install") {
-            steps {
-                sh "helm upgrade myrelease-21 springboot-0.1.0.tgz"
-            }
-        }
-    }
+     }
+  }
 }
+          
