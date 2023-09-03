@@ -64,24 +64,16 @@ pipeline {
                             git config user.name "shantanudatarkar"
                         """
 
-                        // Check if the Helm chart directory exists, and create it if not
-                        if (!fileExists(helmChartPath)) {
-                            mkdir(helmChartPath)
-                        }
+                        // Create the Helm chart directory if it doesn't exist
+                        dir(helmChartPath, makeFolder: true) {
+                            // Update the image tag in values.yaml
+                            writeFile(file: "${helmChartPath}/values.yaml", text: "image: ${imageName}:${BUILD_NUMBER}\n")
 
-                        // Update the image tag in values.yaml
-                        writeFile(file: "${helmChartPath}/values.yaml", text: "image: ${imageName}:${BUILD_NUMBER}\n")
-
-                        // Change to the Helm chart directory
-                        dir(helmChartPath) {
+                            // Change to the Helm chart directory
                             // Add and commit changes
                             sh """
                                 git add --all
                                 git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                            """
-
-                            // Push the changes to GitHub
-                            sh """
                                 git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                             """
                         }
