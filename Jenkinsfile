@@ -65,7 +65,7 @@ pipeline {
                         """
 
                         // Create the Helm chart directory if it doesn't exist
-                        sh "mkdir -p ${helmChartPath}"
+                        sh "sudo mkdir -p ${helmChartPath}"
 
                         // Update the image tag in values.yaml
                         writeFile(file: "${helmChartPath}/values.yaml", text: "image: ${imageName}:${BUILD_NUMBER}\n")
