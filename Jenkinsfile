@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
+        helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
+        imageName = "shantanu/shantanu"
     }
 
     stages {
@@ -45,24 +47,16 @@ pipeline {
         }
 
         stage('Update Deployment File') {
-            environment {
-                GIT_REPO_NAME = "docker-spring-boot"
-                GIT_USER_NAME = "shantanudatarkar"
-            }
             steps {
-                withCredentials([
-                    gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default'),
-                    usernameColonPassword(credentialsId: 'Github_id', variable: 'GITHUB_TOKEN')
-                ]) {
+                withCredentials([[
+                    $class: 'UsernamePasswordMultiBinding',
+                    usernameVariable: 'GIT_USERNAME',
+                    passwordVariable: 'GIT_PASSWORD',
+                    credentialsId: 'Github_id'
+                ]]) {
                     script {
                         // Get the current build number
                         def BUILD_NUMBER = env.BUILD_NUMBER
-
-                        // Define the path to your Helm chart
-                        def helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
-
-                        // Define the image name
-                        def imageName = "shantanu/shantanu"
 
                         // Configure Git user and email
                         sh """
@@ -70,7 +64,7 @@ pipeline {
                             git config user.name "shantanudatarkar"
                         """
                         
-                        // Change to the Helm chart directory using dir
+                        // Change to the Helm chart directory
                         dir(helmChartPath) {
                             // Update the image tag in values.yaml
                             sh """
@@ -85,7 +79,7 @@ pipeline {
 
                             // Push the changes to GitHub
                             sh """
-                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                             """
                         }
                     }
