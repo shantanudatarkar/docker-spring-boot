@@ -63,14 +63,17 @@ pipeline {
                             git config user.email "shan6101995@gmail.com"
                             git config user.name "shantanudatarkar"
                         """
-                        
+
+                        // Check if the Helm chart directory exists, and create it if not
+                        if (!fileExists(helmChartPath)) {
+                            mkdir(helmChartPath)
+                        }
+
+                        // Update the image tag in values.yaml
+                        writeFile(file: "${helmChartPath}/values.yaml", text: "image: ${imageName}:${BUILD_NUMBER}\n")
+
                         // Change to the Helm chart directory
                         dir(helmChartPath) {
-                            // Update the image tag in values.yaml
-                            sh """
-                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
-                            """
-
                             // Add and commit changes
                             sh """
                                 git add --all
