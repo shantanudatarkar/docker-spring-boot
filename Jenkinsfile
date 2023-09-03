@@ -62,15 +62,18 @@ pipeline {
                             // Define the image name
                             def imageName = "shantanu/shantanu"
 
-                            // Update the image tag in values.yaml
-                            sh """
-                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' ${helmChartPath}/values.yaml
-                            """
-
                             // Configure Git user and email
                             sh """
                                 git config user.email "shan6101995@gmail.com"
                                 git config user.name "shantanudatarkar"
+                            """
+
+                            // Change to the Helm chart directory
+                            sh "cd ${helmChartPath}"
+
+                            // Update the image tag in values.yaml
+                            sh """
+                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' values.yaml
                             """
 
                             // Add and commit changes
