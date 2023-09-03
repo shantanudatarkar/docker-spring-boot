@@ -4,20 +4,20 @@ pipeline {
     environment {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/akannan1087/docker-spring-boot']])
             }
         }
-        
+
         stage("Build JAR") {
             steps {
                 sh "mvn clean install"
             }
         }
-        
+
         stage("Build Docker Image") {
             steps {
                 script {
@@ -42,29 +42,51 @@ pipeline {
                     """
                 }
             }
-        }    
-       stage('Update Deployment File') {
+        }
+
+        stage('Update Deployment File') {
             environment {
                 GIT_REPO_NAME = "docker-spring-boot"
                 GIT_USER_NAME = "shantanudatarkar"
             }
             steps {
                 withCredentials([gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default')]) {
-                    withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'Github')]) {
+                    withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'GITHUB_TOKEN')]) {
+                        script {
+                            // Get the current build number
+                            def BUILD_NUMBER = env.BUILD_NUMBER
 
-                    sh '''
-                        git config user.email "shan6101995@gmail.com"
-                        git config user.name "shantanudatarkar"
-                        BUILD_NUMBER=${BUILD_NUMBER}
-                        sed -i "s|image: .*|image: shantanu/shantanu:${BUILD_NUMBER}|g" /home/shantanu/docker-spring-boot/my-helm-chart/values.yaml
-                        git add --all
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    '''
+                            // Define the path to your Helm chart
+                            def helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
+
+                            // Define the image name
+                            def imageName = "shantanu/shantanu"
+
+                            // Update the image tag in values.yaml
+                            sh """
+                                sed -i 's|image: ${imageName}:.*|image: ${imageName}:${BUILD_NUMBER}|' ${helmChartPath}/values.yaml
+                            """
+
+                            // Configure Git user and email
+                            sh """
+                                git config user.email "shan6101995@gmail.com"
+                                git config user.name "shantanudatarkar"
+                            """
+
+                            // Add and commit changes
+                            sh """
+                                git add --all
+                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            """
+
+                            // Push the changes to GitHub
+                            sh """
+                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                            """
+                        }
+                    }
                 }
             }
         }
-     }
-  }
+    }
 }
-          
