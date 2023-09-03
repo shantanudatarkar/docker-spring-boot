@@ -29,11 +29,9 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'aws_cred', variable: 'AWS_CREDENTIALS')]) {
                     sh """
-                        export AWS_ACCESS_KEY_ID=\${AWS_CREDENTIALS_USR}
-                        export AWS_SECRET_ACCESS_KEY=\${AWS_CREDENTIALS_PSW}
                         aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com
-                        docker tag helm-repo:latest 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
                         docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
+                        333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo          
                     """
                 }
             }
