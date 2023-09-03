@@ -25,16 +25,6 @@ pipeline {
             }
         }
         
-        stage ("Push to ECR") {
-            steps {
-                 withCredentials([string(credentialsId: 'aws_cred', variable: 'AWS_CREDENTIALS')]) {
-                       sh "aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com"
-                       sh "docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}"
-                    
-                }
-            }
-        }
-        
         stage ("Helm package") {
             steps {
                 sh "helm package springboot"
