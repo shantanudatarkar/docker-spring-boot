@@ -58,5 +58,26 @@ pipeline {
                 }
             }
         }
+    stage('Update Deployment File') {
+    environment {
+        GIT_REPO_NAME = "docker-spring-boot"
+        GIT_USER_NAME = "shantanudatarkar"
+    }
+    steps {
+        withCredentials([gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default')]) {
+            withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'Github')]) {
+                script {
+                    sh """
+                        git config user.email "shan6101995@gmail.com"
+                        git config user.name "shantanudatarkar"
+                        git add .
+                        git commit -m "Update deployment image to version \${BUILD_NUMBER}"
+                        git push https://\${GITHUB_TOKEN}@github.com/\${GIT_USER_NAME}/\${GIT_REPO_NAME} HEAD:master
+                    """
+                }
+            }
+        }
+    }
+}
     }
 }
