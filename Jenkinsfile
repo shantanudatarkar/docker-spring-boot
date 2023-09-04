@@ -5,8 +5,8 @@ pipeline {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
         helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/"
         imageName = "shantanu/shantanu"
-        GITHUB_USER = credentials('Github_id').username
-        GITHUB_TOKEN = credentials('Github_id').password
+        // Use the Jenkins build number dynamically
+        buildNumber = env.BUILD_NUMBER
     }
 
     stages {
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with a unique tag
-                    def imageFullName = "${registry}:${BUILD_NUMBER}"
+                    def imageFullName = "${registry}:${buildNumber}"
                     docker.build(imageFullName)
                     env.IMAGE_NAME = imageFullName
                 }
@@ -47,28 +47,28 @@ pipeline {
                 ]) {
                     sh """
                         aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com
-                        docker tag ${env.IMAGE_NAME} 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
-                        docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
+                        docker tag ${env.IMAGE_NAME} 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${buildNumber}
+                        docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${buildNumber}
                     """
                 }
             }
         }
 
-        stage("Update Deployment File") {
+        stage('Update Deployment File') {
+            environment {
+                GIT_REPO_NAME = "docker-spring-boot"
+                GIT_USER_NAME = "shantanudatarkar"
+            }
             steps {
-                script {
-                    def filePath = "${helmChartPath}/values.yaml" // Adjust the path if needed
-                    def buildNumber = env.BUILD_NUMBER
-
-                    sh """
+                withCredentials([usernamePassword(credentialsId: 'Github_id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                    sh '''
                         git config user.email "shan6101995@gmail.com"
                         git config user.name "shantanudatarkar"
-                        sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${filePath}
+                        sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${helmChartPath}/values.yaml
                         git -C ${helmChartPath} add --all
                         git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
                         git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                        cat ${filePath}  // Print the updated file
-                    """
+                    '''
                 }
             }
         }
