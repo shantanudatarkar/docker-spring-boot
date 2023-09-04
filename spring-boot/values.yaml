@@ -8,7 +8,7 @@ image:
   repository: 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "REPLACE_ME"
 
 imagePullSecrets: []
 nameOverride: ""
