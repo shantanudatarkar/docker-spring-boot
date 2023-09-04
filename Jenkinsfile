@@ -5,6 +5,7 @@ pipeline {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
         helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/"
         imageName = "shantanu/shantanu"
+        buildNumber = "${BUILD_NUMBER}" // Store BUILD_NUMBER in an environment variable
     }
 
     stages {
@@ -26,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image with a unique tag
-                    def imageFullName = "${registry}:${BUILD_NUMBER}"
+                    def imageFullName = "${registry}:${env.buildNumber}"
                     docker.build(imageFullName)
                     env.IMAGE_NAME = imageFullName
                 }
@@ -43,8 +44,8 @@ pipeline {
                 ]]) {
                     sh """
                         aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com
-                        docker tag ${env.IMAGE_NAME} 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
-                        docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${BUILD_NUMBER}
+                        docker tag ${env.IMAGE_NAME} 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${env.buildNumber}
+                        docker push 333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo:${env.buildNumber}
                     """
                 }
             }
@@ -61,9 +62,9 @@ pipeline {
                    sh '''
                        git config user.email "shan6101995@gmail.com"
                        git config user.name "shantanudatarkar"
-                       sed -i "s|tag: 'REPLACE_ME'|tag: '${BUILD_NUMBER}'|" /var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml
+                       sed -i "s|tag: 'REPLACE_ME'|tag: '${env.buildNumber}'|" ${helmChartPath}/values.yaml
                        git -C ${helmChartPath} add --all
-                       git -C ${helmChartPath} commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                       git -C ${helmChartPath} commit -m "Update deployment image to version ${env.buildNumber}"
                        git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                       '''
                 }
