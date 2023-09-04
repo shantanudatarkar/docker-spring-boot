@@ -56,13 +56,13 @@ pipeline {
                     withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'Github')]) {
 
                    sh '''
-                        git config user.email "shan6101995@gmail.com"
-                        git config user.name "shantanudatarkar"
-                        BUILD_NUMBER=${BUILD_NUMBER}
-                        sed -i 's|tag: "REPLACE_ME"|tag: "${buildNumber}"|' /var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml
-                        git add --all
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:refs/heads/master
+                       git config user.email "shan6101995@gmail.com"
+                       git config user.name "shantanudatarkar"
+                       BUILD_NUMBER=${BUILD_NUMBER}
+                       sed -i 's|tag: "REPLACE_ME"|tag: "${BUILD_NUMBER}"|' /var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml
+                       git add --all
+                       git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                       git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
                       '''
                 }
             }
