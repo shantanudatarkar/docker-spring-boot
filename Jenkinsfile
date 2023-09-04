@@ -5,6 +5,8 @@ pipeline {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
         helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/"
         imageName = "shantanu/shantanu"
+        GITHUB_USER = credentials('Github_id').username
+        GITHUB_TOKEN = credentials('Github_id').password
     }
 
     stages {
@@ -52,21 +54,21 @@ pipeline {
             }
         }
 
-      stage("Update Deployment File") {
-    steps {
-        script {
-            def filePath = "${helmChartPath}/values.yaml" // Adjust the path if needed
-            def buildNumber = env.BUILD_NUMBER
+        stage("Update Deployment File") {
+            steps {
+                script {
+                    def filePath = "${helmChartPath}/values.yaml" // Adjust the path if needed
+                    def buildNumber = env.BUILD_NUMBER
 
-            sh """
-                git config user.email "shan6101995@gmail.com"
-                git config user.name "shantanudatarkar"
-                sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${filePath}
-                git -C ${helmChartPath} add --all
-                git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
-                git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                cat ${filePath}  // Print the updated file
-            """
+                    sh """
+                        git config user.email "shan6101995@gmail.com"
+                        git config user.name "shantanudatarkar"
+                        sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${filePath}
+                        git -C ${helmChartPath} add --all
+                        git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
+                        git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                        cat ${filePath}  // Print the updated file
+                    """
                 }
             }
         }
