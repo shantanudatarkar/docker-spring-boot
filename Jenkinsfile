@@ -47,40 +47,27 @@ pipeline {
         }
 
         stage('Update Deployment File') {
+            environment {
+                GIT_REPO_NAME = "docker-spring-boot"
+                GIT_USER_NAME = "shantanudatarkar"
+            }
             steps {
-                withCredentials([[
-                    $class: 'UsernamePasswordMultiBinding',
-                    usernameVariable: 'GIT_USERNAME',
-                    passwordVariable: 'GIT_PASSWORD',
-                    credentialsId: 'Github_id'
-                ]]) {
-                    script {
-                        // Get the current build number
-                        def BUILD_NUMBER = env.BUILD_NUMBER
+                withCredentials([gitUsernamePassword(credentialsId: 'Github_id', gitToolName: 'Default')]) {
+                    withCredentials([usernameColonPassword(credentialsId: 'Github_id', variable: 'Github')]) {
 
-                        // Configure Git user and email
-                        sh """
-                            git config user.email "shan6101995@gmail.com"
-                            git config user.name "shantanudatarkar"
-                        """
-
-                        // Create the Helm chart directory if it doesn't exist
-                        sh "sudo mkdir -p ${helmChartPath}"
-
-                        // Update the image tag in values.yaml
-                        writeFile(file: "${helmChartPath}/values.yaml", text: "image: ${imageName}:${BUILD_NUMBER}\n")
-
-                        // Change to the Helm chart directory
-                        // Add and commit changes
-                        sh """
-                            cd ${helmChartPath}
-                            git add --all
-                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                        """
-                    }
+                    sh '''
+                        git config user.email "shan6101995@gmail.com"
+                        git config user.name "shantanudatarkar"
+                        BUILD_NUMBER=${BUILD_NUMBER}
+                        def buildNumber = env.BUILD_NUMBER
+                        sh "sed -i 's|REPLACE_ME|${buildNumber}|g' /var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml"
+                        git add --all
+                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    '''
                 }
             }
         }
-    }
+     }
+  }
 }
