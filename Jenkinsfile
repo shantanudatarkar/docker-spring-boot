@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
-        helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml"
+        helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/"
         imageName = "shantanu/shantanu"
     }
 
