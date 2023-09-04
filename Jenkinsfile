@@ -52,23 +52,21 @@ pipeline {
             }
         }
 
-        stage('Update Deployment File') {
-            environment {
-                GIT_REPO_NAME = "docker-spring-boot"
-                GIT_USER_NAME = "shantanudatarkar"
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'Github_id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+      stage("Update Deployment File") {
+    steps {
+        script {
+            def filePath = "${helmChartPath}/values.yaml" // Adjust the path if needed
+            def buildNumber = env.BUILD_NUMBER
 
-                    sh '''
-                        git config user.email "shan6101995@gmail.com"
-                        git config user.name "shantanudatarkar"
-                        BUILD_NUMBER=${BUILD_NUMBER}
-                        sed -i "s|tag: 'REPLACE_ME'|tag: '${BUILD_NUMBER}'|" ${helmChartPath}/values.yaml
-                        git -C ${helmChartPath} add --all
-                        git -C ${helmChartPath} commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                    '''
+            sh """
+                git config user.email "shan6101995@gmail.com"
+                git config user.name "shantanudatarkar"
+                sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${filePath}
+                git -C ${helmChartPath} add --all
+                git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
+                git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                cat ${filePath}  // Print the updated file
+            """
                 }
             }
         }
