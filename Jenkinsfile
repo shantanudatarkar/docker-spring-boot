@@ -6,7 +6,7 @@ pipeline {
         helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/"
         imageName = "shantanu/shantanu"
         // Use the Jenkins build number dynamically
-        buildNumber = env.BUILD_NUMBER
+        buildNumber = "${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -54,21 +54,21 @@ pipeline {
             }
         }
 
-        stage('Update Deployment File') {
-            environment {
-                GIT_REPO_NAME = "docker-spring-boot"
-                GIT_USER_NAME = "shantanudatarkar"
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'Github_id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        git config user.email "shan6101995@gmail.com"
-                        git config user.name "shantanudatarkar"
-                        sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${helmChartPath}/values.yaml
-                        git -C ${helmChartPath} add --all
-                        git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
-                        git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                    '''
+       stage("Update Deployment File") {
+    steps {
+        script {
+            def filePath = "${helmChartPath}/values.yaml" // Adjust the path if needed
+            def buildNumber = "${env.BUILD_NUMBER}"  // Enclose BUILD_NUMBER in double quotes
+
+            sh """
+                 git config user.email "shan6101995@gmail.com"
+                 git config user.name "shantanudatarkar"
+                 sed -i "s|tag: 'REPLACE_ME'|tag: '${buildNumber}'|" ${filePath}
+                 git -C ${helmChartPath} add --all
+                 git -C ${helmChartPath} commit -m "Update deployment image to version ${buildNumber}"
+                 git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                 cat ${filePath}  // Print the updated file
+              """
                 }
             }
         }
