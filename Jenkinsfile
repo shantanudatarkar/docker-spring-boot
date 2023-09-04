@@ -55,7 +55,7 @@ pipeline {
         stage('Update Helm Chart') {
             steps {
                 script {
-                    sh "sed -i 's|tag: \"REPLACE_ME\"|tag: \"${newImageTag}\"|' ${helmChartPath}/values.yaml"
+                    sh "sed -i 's|tag: \"*\"|tag: \"${newImageTag}\"|' ${helmChartPath}/values.yaml"
                 }
             }
         }
