@@ -57,16 +57,15 @@ pipeline {
                 GIT_USER_NAME = "shantanudatarkar"
             }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'Github_id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-
-                   sh '''
-                       git config user.email "shan6101995@gmail.com"
-                       git config user.name "shantanudatarkar"
-                       sed -i "s|tag: 'REPLACE_ME'|tag: '${env.buildNumber}'|" ${helmChartPath}/values.yaml
-                       git -C ${helmChartPath} add --all
-                       git -C ${helmChartPath} commit -m "Update deployment image to version ${env.buildNumber}"
-                       git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                      '''
+                 withCredentials([usernamePassword(credentialsId: 'Github_id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+            sh '''
+                git config user.email "shan6101995@gmail.com"
+                git config user.name "shantanudatarkar"
+                sed -i "s|tag: 'REPLACE_ME'|tag: '${BUILD_NUMBER}'|" ${helmChartPath}/values.yaml
+                git -C ${helmChartPath} add --all
+                git -C ${helmChartPath} commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+            '''
                 }
             }
         }
