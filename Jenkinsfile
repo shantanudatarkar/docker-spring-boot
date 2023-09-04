@@ -4,7 +4,6 @@ pipeline {
     environment {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
         helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot"
-        imageName = "shantanu/shantanu"
         newImageTag = "${BUILD_NUMBER}"
     }
 
@@ -55,7 +54,7 @@ pipeline {
         stage('Update Helm Chart') {
             steps {
                 script {
-                    sh "sed -i 's|tag: \"*\"|tag: \"${newImageTag}\"|' ${helmChartPath}/values.yaml"
+                    sh "sed -i 's|tag: \"\"|tag: \"${newImageTag}\"|' ${helmChartPath}/values.yaml"
                 }
             }
         }
