@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         registry = "333920746455.dkr.ecr.ap-southeast-2.amazonaws.com/helm-repo"
-        helmChartPath = "/home/shantanu/docker-spring-boot/my-helm-chart"
+        helmChartPath = "/var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml"
         imageName = "shantanu/shantanu"
     }
 
@@ -61,7 +61,7 @@ pipeline {
                    sh '''
                        git config user.email "shan6101995@gmail.com"
                        git config user.name "shantanudatarkar"
-                       sed -i "s|tag: 'REPLACE_ME'|tag: '${BUILD_NUMBER}'|" ${helmChartPath}/values.yaml
+                       sed -i "s|tag: 'REPLACE_ME'|tag: '${BUILD_NUMBER}'|" /var/lib/jenkins/workspace/Helm-pipeline/spring-boot/values.yaml
                        git -C ${helmChartPath} add --all
                        git -C ${helmChartPath} commit -m "Update deployment image to version ${BUILD_NUMBER}"
                        git -C ${helmChartPath} push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
